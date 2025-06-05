@@ -31,6 +31,23 @@ interface AIInsightRequest {
   weatherData?: WeatherData[];
 }
 
+interface MonthlyStats {
+  total: number;
+  days: number;
+  max: number;
+  maxDate: string;
+  min: number;
+  minDate: string;
+}
+
+interface WeatherStats {
+  avgTemp: number;
+  maxTemp: number;
+  minTemp: number;
+  conditions: Record<string, number>;
+  count: number;
+}
+
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true
@@ -62,7 +79,7 @@ function summarizeData(data: DailyEnergyData[], showCost: boolean) {
       acc[month].minDate = day.date;
     }
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, MonthlyStats>);
 
   return Object.entries(monthlyData).map(([month, stats]) => ({
     month,
@@ -94,7 +111,7 @@ function summarizeWeatherData(weatherData: WeatherData[]) {
     acc[month].conditions[day.weatherCondition] = (acc[month].conditions[day.weatherCondition] || 0) + 1;
     acc[month].count++;
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, WeatherStats>);
 }
 
 export async function getAIInsights(request: AIInsightRequest): Promise<AIInsight[]> {
@@ -207,17 +224,3 @@ export async function getAIInsights(request: AIInsightRequest): Promise<AIInsigh
     throw error;
   }
 }
-
-// Helper functions for formatting
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(value);
-}
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 2
-  }).format(value);
-} 

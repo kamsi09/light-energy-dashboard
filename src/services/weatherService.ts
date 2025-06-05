@@ -1,7 +1,6 @@
-import type { WeatherData, Location, DailyEnergyData } from '../types/energy';
+import type { WeatherData, DailyEnergyData } from '../types/energy';
 
 export async function fetchWeatherData(
-  location: Location,
   energyData: DailyEnergyData[]
 ): Promise<WeatherData[]> {
   // TODO: Implement actual weather API integration
