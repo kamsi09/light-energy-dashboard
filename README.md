@@ -1,118 +1,117 @@
 # Light Energy Dashboard
 
-A modern, interactive dashboard for visualizing and understanding residential energy consumption patterns. Built with React, TypeScript, and Chakra UI.
-
-![Dashboard Preview](./src/assets/preview.png)
+A modern, interactive dashboard for monitoring and analyzing energy consumption data. Built with React, TypeScript, and Chakra UI.
 
 ## Features
 
-- 📊 **Interactive Energy Chart**
-  - Daily energy consumption visualization
-  - Toggle between kWh and cost views
-  - Date range selection for focused analysis
+### Real-time Energy Monitoring
+- Interactive line charts showing energy consumption over time
+- Toggle between kWh and cost views
+- Customizable date range selection
+- Responsive design for all screen sizes
 
-- 💡 **Smart Energy Insights**
-  - Total consumption/cost over selected period
-  - Average daily consumption/cost
-  - Highest usage day with date
-  - Usage trend analysis (comparing first and last week)
-  - Potential savings estimates
-  - Interactive tooltips for better understanding
+### Smart Energy Insights
+- Advanced analysis of energy consumption patterns
+- Location-aware recommendations
+- Historical comparisons and trend analysis
+- Specific, actionable recommendations with:
+  - Detailed savings calculations with ranges
+  - Location-specific impact analysis
+  - Historical context and comparisons
+  - Clear action items
 
-- 🔄 **Data Management**
-  - CSV file upload support
-  - 15-minute interval data processing
-  - Automatic cost calculation (14¢/kWh)
-  - Date range filtering
-  - Data validation and error handling
+### Location-Based Features
+- City selection for location context
+- Regional energy usage benchmarks
+- Location-aware recommendations
+- Weather impact analysis
 
-## Tech Stack
+### Data Visualization
+- Interactive charts with hover details
+- Multiple view options (daily, weekly, monthly)
+- Customizable date ranges
+- Export capabilities
 
-- React 18
-- TypeScript
-- Chakra UI for styling
-- Recharts for data visualization
-- date-fns for date manipulation
-- Framer Motion for animations
+### Smart Features
+- Automatic anomaly detection
+- Usage pattern analysis
+- Cost optimization suggestions
+- Energy efficiency recommendations
 
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js 16.x or later
-- npm 7.x or later
+- Node.js (v14 or higher)
+- npm or yarn
 
 ### Installation
-
 1. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/light-energy-dashboard.git
-   cd light-energy-dashboard
    ```
 
 2. Install dependencies:
    ```bash
+   cd light-energy-dashboard
    npm install
    ```
 
-3. Start the development server:
+3. Create a `.env` file in the root directory with your API key:
+   ```
+   VITE_OPENAI_API_KEY=your_openai_api_key
+   ```
+
+4. Start the development server:
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-### Building for Production
-
-```bash
-npm run build
+## Project Structure
+```
+src/
+├── components/         # React components
+├── services/          # API and data services
+├── types/            # TypeScript type definitions
+├── utils/            # Utility functions
+└── App.tsx           # Main application component
 ```
 
-The build artifacts will be stored in the `dist/` directory.
+## Key Components
 
-## Usage
+### EnergyChart
+- Interactive line chart for energy data visualization
+- Customizable date range selection
+- Toggle between kWh and cost views
+- Responsive design
 
-1. **Upload Data**
-   - Click the upload area or drag and drop your CSV file
-   - The file should contain 15-minute interval energy data
-   - Supported format: CSV with datetime, duration, unit, consumption, and generation columns
+### InsightsPanel
+- Smart energy insights and recommendations
+- Location-aware analysis
+- Historical comparisons
+- Actionable recommendations with savings calculations
 
-2. **View Dashboard**
-   - The chart shows daily energy consumption
-   - Use the date range selector to focus on specific periods
-   - Toggle between kWh and cost views using the unit toggle
-   - Hover over data points for detailed information
+### LocationSelector
+- City selection for location context
+- Regional energy usage context
+- Weather impact analysis
 
-3. **Analyze Insights**
-   - View total consumption and costs
-   - Check average daily usage
-   - Identify highest usage days
-   - Monitor usage trends
-   - Get potential savings estimates
-
-## Data Format
-
-The application expects a CSV file with the following columns:
-- `datetime`: Timestamp (YYYY-MM-DD HH:mm:ss)
-- `duration`: Duration in minutes
-- `unit`: Energy unit (e.g., "Wh")
-- `consumption`: Energy consumption value
-- `generation`: Energy generation value (if applicable)
+## Technologies Used
+- React
+- TypeScript
+- Chakra UI
+- Chart.js
+- OpenAI API (for advanced energy analysis)
 
 ## Contributing
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
 ## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
-
-- [Chakra UI](https://chakra-ui.com/) for the beautiful component library
-- [Recharts](https://recharts.org/) for the charting capabilities
-- [Framer Motion](https://www.framer.com/motion/) for the smooth animations
+- Chart.js for data visualization
+- Chakra UI for the component library

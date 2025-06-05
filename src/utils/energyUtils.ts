@@ -3,6 +3,7 @@ import { format, startOfWeek, isWeekend } from 'date-fns';
 
 const RATE_PER_KWH = 0.14; // 14 cents per kWh
 
+// Aggregates daily data into monthly summaries for better analysis
 export const processEnergyData = (data: EnergyData[]): DailyEnergyData[] => {
   const dailyData = new Map<string, DailyEnergyData>();
 
@@ -50,8 +51,41 @@ export const processEnergyData = (data: EnergyData[]): DailyEnergyData[] => {
       cost: day.cost
     }))
   });
-
+  
   return result;
+};
+
+// Validates energy data for required fields and data types
+export const validateEnergyData = (data: EnergyData[]): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  if (!Array.isArray(data) || data.length === 0) {
+    return { 
+      isValid: false, 
+      errors: ['Data must be a non-empty array'] 
+    };
+  }
+
+  data.forEach((record, index) => {
+    // Check for required fields
+    if (!record.datetime) {
+      errors.push(`Record ${index + 1}: Missing datetime`);
+    }
+    if (typeof record.consumption !== 'number' || isNaN(record.consumption)) {
+      errors.push(`Record ${index + 1}: Invalid consumption value`);
+    }
+    if (typeof record.generation !== 'number' || isNaN(record.generation)) {
+      errors.push(`Record ${index + 1}: Invalid generation value`);
+    }
+    if (!record.unit) {
+      errors.push(`Record ${index + 1}: Missing unit`);
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 };
 
 export const processWeeklyData = (dailyData: DailyEnergyData[]): WeeklyEnergyData[] => {

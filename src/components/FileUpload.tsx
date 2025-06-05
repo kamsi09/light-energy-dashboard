@@ -19,6 +19,7 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
   const theme = useTheme();
   const toast = useToast();
 
+  // Validates each row of the CSV file
   const validateRow = (row: string[]): { isValid: boolean; error?: string } => {
     if (row.length !== 5) {
       return { 
@@ -29,7 +30,7 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
 
     const [datetime, duration, unit, consumption, generation] = row;
     
-    // Validate datetime format (more lenient - accepts both ISO and simple date formats)
+    // Check datetime format (accepts both ISO and simple date formats)
     const dateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2})?$/;
     if (!dateRegex.test(datetime)) {
       return { 
@@ -38,7 +39,7 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
       };
     }
     
-    // Validate numbers
+    // Validate numeric fields
     const durationNum = parseFloat(duration);
     const consumptionNum = parseFloat(consumption);
     const generationNum = parseFloat(generation);
@@ -64,7 +65,7 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
       };
     }
     
-    // Validate unit (case insensitive)
+    // Check unit format
     if (unit.toLowerCase() !== 'wh') {
       return { 
         isValid: false, 
@@ -84,7 +85,7 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
           const text = e.target?.result as string;
           const lines = text.split('\n');
           
-          // Skip empty lines at the start
+          // Skip any empty lines at the start of the file
           let startIndex = 0;
           while (startIndex < lines.length && !lines[startIndex].trim()) {
             startIndex++;
@@ -94,16 +95,16 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
             throw new Error('File is empty or contains only empty lines');
           }
 
-          const rows = lines.slice(startIndex + 1); // Skip header
+          const rows = lines.slice(startIndex + 1); // Skip header row
           const data: EnergyData[] = [];
           const errors: string[] = [];
 
           rows.forEach((row, index) => {
             if (!row.trim()) return; // Skip empty rows
             
-            // Split by comma and trim each value
+            // Parse CSV row
             const columns = row.split(',').map(col => col.trim());
-            console.log(`Row ${index + 2}:`, columns); // Debug log
+            console.log(`Row ${index + 2}:`, columns); // Log for debugging
             
             const validation = validateRow(columns);
             
@@ -144,11 +145,11 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
               borderRadius: UI_CONFIG.borderRadius.button,
             },
           });
-        } catch (err) {
-          console.error('Error parsing CSV:', err);
+        } catch (error) {
+          console.error('Error processing file:', error);
           toast({
             title: 'Error',
-            description: err instanceof Error ? err.message : 'Failed to parse the CSV file. Please check the format.',
+            description: error instanceof Error ? error.message : 'Failed to process file',
             status: 'error',
             duration: 5000,
             isClosable: true,
@@ -161,6 +162,7 @@ const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
           });
         }
       };
+
       reader.readAsText(file);
     }
   }, [onDataLoaded, toast, theme.colors]);

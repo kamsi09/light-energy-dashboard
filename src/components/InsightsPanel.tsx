@@ -1,182 +1,243 @@
-import { Box, Heading, SimpleGrid, Stat, StatLabel, StatNumber, StatHelpText, Text, HStack, Icon, Tooltip } from '@chakra-ui/react';
-import { InfoIcon } from '@chakra-ui/icons';
-import type { DailyEnergyData } from '../types/energy';
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { Box, VStack, HStack, Text, useColorModeValue, Button, Spinner, List, ListItem, Stat, StatLabel, StatNumber, StatHelpText, Tooltip, Badge, Divider } from '@chakra-ui/react';
+import { SearchIcon, InfoIcon } from '@chakra-ui/icons';
+import type { DailyEnergyData, AIInsight } from '../types/energy';
+import { useState, useEffect, useRef } from 'react';
+import { getAIInsights } from '../services/energyService';
+import { formatNumber, formatCurrency } from '../utils/formatters';
+
+const iconMap: Record<string, string> = {
+  trending_up: '📈',
+  warning: '⚠️',
+  lightbulb: '💡',
+  calendar_today: '📅',
+  savings: '💰',
+  schedule: '⏰',
+  eco: '🌱'
+};
 
 interface InsightsPanelProps {
   data: DailyEnergyData[];
   showCost: boolean;
 }
 
-const InsightsPanel = ({ data, showCost }: InsightsPanelProps) => {
+export default function InsightsPanel({ data, showCost }: InsightsPanelProps) {
+  const [insights, setInsights] = useState<AIInsight[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const insightsCache = useRef<Record<string, AIInsight[]>>({});
+
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
+  const highlightColor = useColorModeValue('brand.primary', 'brand.secondary');
+  const cardBg = useColorModeValue('gray.50', 'gray.700');
+  const hoverBg = useColorModeValue('gray.100', 'gray.600');
+  const iconBg = useColorModeValue('blue.50', 'blue.900');
+  const iconColor = useColorModeValue('blue.600', 'blue.200');
+
+  const fetchInsights = async () => {
+    if (data.length > 0) {
+      try {
+        setError(null);
+        setIsLoading(true);
+        const newInsights = await getAIInsights({ 
+          energyData: data, 
+          showCost
+        });
+        const validInsights = Array.isArray(newInsights) ? newInsights : [];
+        if (validInsights.length === 0) {
+          setError('No insights available for the selected period.');
+        }
+        const cacheKey = showCost ? 'cost' : 'kwh';
+        insightsCache.current[cacheKey] = validInsights;
+        if (cacheKey === (showCost ? 'cost' : 'kwh')) {
+          setInsights(validInsights);
+        }
+      } catch (error) {
+        console.error('Error generating AI insights:', error);
+        setError('Failed to generate insights. Please try again.');
+        setInsights([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const cacheKey = showCost ? 'cost' : 'kwh';
+    if (!insightsCache.current[cacheKey]) {
+      fetchInsights();
+    }
+  }, [data, showCost]);
+
   if (!data.length) return null;
 
-  // Calculate basic metrics
+  // Calculate insights
   const totalUsage = data.reduce((sum, day) => sum + (showCost ? day.cost : day.consumption), 0);
   const averageUsage = totalUsage / data.length;
   const maxUsage = Math.max(...data.map(day => showCost ? day.cost : day.consumption));
-  const maxUsageDate = data.find(day => (showCost ? day.cost : day.consumption) === maxUsage)?.date;
-  
-  // Calculate date range
-  const startDate = parseISO(data[0].date);
-  const endDate = parseISO(data[data.length - 1].date);
-  const daysInRange = differenceInDays(endDate, startDate) + 1;
-
-  // Calculate trend (comparing first and last week)
-  const firstWeek = data.slice(0, 7);
-  const lastWeek = data.slice(-7);
-  const firstWeekAvg = firstWeek.reduce((sum, day) => sum + (showCost ? day.cost : day.consumption), 0) / firstWeek.length;
-  const lastWeekAvg = lastWeek.reduce((sum, day) => sum + (showCost ? day.cost : day.consumption), 0) / lastWeek.length;
-  const trend = ((lastWeekAvg - firstWeekAvg) / firstWeekAvg) * 100;
-
-  // Calculate savings potential (assuming 20% reduction is possible)
-  const potentialSavings = totalUsage * 0.2;
-
-  const formatValue = (value: number) => {
-    if (showCost) {
-      return `$${value.toFixed(2)}`;
-    }
-    return `${value.toFixed(1)} kWh`;
-  };
-
-  const formatDate = (date: string) => {
-    return format(parseISO(date), 'MMM d, yyyy');
-  };
+  const maxUsageDay = data.find(day => (showCost ? day.cost : day.consumption) === maxUsage)?.date;
 
   return (
-    <Box
-      w="100%"
-      bg="brand.white"
-      p={6}
-      borderRadius="xl"
-      boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-      transition="all 0.3s ease"
-      _hover={{
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-      }}
+    <Box 
+      w="100%" 
+      bg={bgColor} 
+      p={6} 
+      borderRadius="xl" 
+      boxShadow="sm" 
+      borderWidth="1px" 
+      borderColor={borderColor}
     >
-      <HStack justify="space-between" align="center" mb={6}>
-        <Heading 
-          size="lg" 
-          color="brand.primary"
-          fontWeight="600"
-        >
-          Energy Insights
-        </Heading>
-        <Text color="brand.gray" fontSize="sm">
-          {formatDate(data[0].date)} - {formatDate(data[data.length - 1].date)}
-        </Text>
-      </HStack>
-
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
-        <Stat
-          p={4}
-          borderRadius="lg"
-          bg="brand.white"
-          transition="all 0.2s"
-          _hover={{
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-          }}
-        >
-          <StatLabel color="brand.gray" fontSize="md">
-            Total {showCost ? 'Cost' : 'Consumption'}
-            <Tooltip label="Total energy consumption or cost over the selected period">
-              <Icon as={InfoIcon} ml={2} color="brand.gray" />
-            </Tooltip>
-          </StatLabel>
-          <StatNumber color="brand.primary" fontSize="2xl" fontWeight="600">
-            {formatValue(totalUsage)}
-          </StatNumber>
-          <StatHelpText color="brand.gray">
-            Over {daysInRange} days
-          </StatHelpText>
-        </Stat>
-
-        <Stat
-          p={4}
-          borderRadius="lg"
-          bg="brand.white"
-          transition="all 0.2s"
-          _hover={{
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-          }}
-        >
-          <StatLabel color="brand.gray" fontSize="md">
-            Average Daily {showCost ? 'Cost' : 'Consumption'}
-            <Tooltip label="Average daily energy consumption or cost">
-              <Icon as={InfoIcon} ml={2} color="brand.gray" />
-            </Tooltip>
-          </StatLabel>
-          <StatNumber color="brand.primary" fontSize="2xl" fontWeight="600">
-            {formatValue(averageUsage)}
-          </StatNumber>
-          <StatHelpText color="brand.gray">
-            Per day
-          </StatHelpText>
-        </Stat>
-
-        <Stat
-          p={4}
-          borderRadius="lg"
-          bg="brand.white"
-          transition="all 0.2s"
-          _hover={{
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-          }}
-        >
-          <StatLabel color="brand.gray" fontSize="md">
-            Highest {showCost ? 'Cost' : 'Consumption'}
-            <Tooltip label="Highest daily energy consumption or cost">
-              <Icon as={InfoIcon} ml={2} color="brand.gray" />
-            </Tooltip>
-          </StatLabel>
-          <StatNumber color="brand.primary" fontSize="2xl" fontWeight="600">
-            {formatValue(maxUsage)}
-          </StatNumber>
-          <StatHelpText color="brand.gray">
-            On {maxUsageDate ? formatDate(maxUsageDate) : 'N/A'}
-          </StatHelpText>
-        </Stat>
-
-        <Stat
-          p={4}
-          borderRadius="lg"
-          bg="brand.white"
-          transition="all 0.2s"
-          _hover={{
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-          }}
-        >
-          <StatLabel color="brand.gray" fontSize="md">
-            Usage Trend
-            <Tooltip label="Comparison between first and last week of the period">
-              <Icon as={InfoIcon} ml={2} color="brand.gray" />
-            </Tooltip>
-          </StatLabel>
-          <StatNumber 
-            color={trend > 0 ? 'red.500' : 'green.500'} 
-            fontSize="2xl" 
-            fontWeight="600"
+      <VStack spacing={6} align="stretch">
+        <HStack justify="space-between" align="center">
+          <Text fontSize="xl" fontWeight="600" color={highlightColor}>
+            Energy Usage Insights
+          </Text>
+          <Button
+            size="sm"
+            variant="outline"
+            colorScheme="brand"
+            onClick={() => {
+              const cacheKey = showCost ? 'cost' : 'kwh';
+              insightsCache.current[cacheKey] = [];
+              fetchInsights();
+            }}
+            leftIcon={<SearchIcon />}
           >
-            {trend > 0 ? '+' : ''}{trend.toFixed(1)}%
-          </StatNumber>
-          <StatHelpText color="brand.gray">
-            {trend > 0 ? 'Increase' : 'Decrease'} in usage
-          </StatHelpText>
-        </Stat>
-      </SimpleGrid>
+            Refresh Insights
+          </Button>
+        </HStack>
 
-      <Box mt={6} p={4} bg="blue.50" borderRadius="lg">
-        <Text color="blue.700" fontSize="sm">
-          💡 Potential Savings: You could save up to {formatValue(potentialSavings)} by reducing your energy consumption by 20%.
-        </Text>
-      </Box>
+        <HStack spacing={8} wrap="wrap" justify="space-between">
+          <Stat>
+            <StatLabel>Total {showCost ? 'Cost' : 'Consumption'}</StatLabel>
+            <StatNumber color={highlightColor}>
+              {showCost ? formatCurrency(totalUsage) : formatNumber(totalUsage) + ' kWh'}
+            </StatNumber>
+            <StatHelpText>
+              <Tooltip label="Total energy consumption over the selected period">
+                <InfoIcon mr={1} />
+              </Tooltip>
+              {showCost ? 'Total cost' : 'Total energy used'}
+            </StatHelpText>
+          </Stat>
+
+          <Stat>
+            <StatLabel>Average Daily {showCost ? 'Cost' : 'Usage'}</StatLabel>
+            <StatNumber color={highlightColor}>
+              {showCost ? formatCurrency(averageUsage) : formatNumber(averageUsage) + ' kWh'}
+            </StatNumber>
+            <StatHelpText>
+              <Tooltip label="Average daily energy consumption">
+                <InfoIcon mr={1} />
+              </Tooltip>
+              Per day
+            </StatHelpText>
+          </Stat>
+
+          <Stat>
+            <StatLabel>Highest {showCost ? 'Cost' : 'Usage'}</StatLabel>
+            <StatNumber color={highlightColor}>
+              {showCost ? formatCurrency(maxUsage) : formatNumber(maxUsage) + ' kWh'}
+            </StatNumber>
+            <StatHelpText>
+              <Tooltip label={`Highest daily ${showCost ? 'cost' : 'consumption'} recorded`}>
+                <InfoIcon mr={1} />
+              </Tooltip>
+              {maxUsageDay ? `on ${new Date(maxUsageDay).toLocaleDateString()}` : ''}
+            </StatHelpText>
+          </Stat>
+        </HStack>
+
+        <Divider />
+
+        <HStack justify="space-between" align="center">
+          <HStack spacing={3}>
+            <Text fontSize="lg" fontWeight="600" color={highlightColor}>
+              AI-Powered Insights
+            </Text>
+            <Badge colorScheme="purple" variant="subtle" fontSize="sm">
+              Powered by GPT
+            </Badge>
+          </HStack>
+        </HStack>
+
+        {isLoading ? (
+          <VStack spacing={4} py={8}>
+            <Spinner size="lg" color="brand.primary" thickness="3px" />
+            <Text color={textColor} fontSize="sm">
+              Analyzing your energy data with AI...
+            </Text>
+          </VStack>
+        ) : error ? (
+          <Text color="red.500" textAlign="center" py={4}>
+            {error}
+          </Text>
+        ) : (
+          <VStack spacing={4} align="stretch">
+            {insights.map((insight, index) => (
+              <Box
+                key={index}
+                p={5}
+                bg={cardBg}
+                borderRadius="lg"
+                border="1px solid"
+                borderColor={borderColor}
+                _hover={{ bg: hoverBg, transform: 'translateY(-1px)' }}
+                transition="all 0.2s"
+              >
+                <VStack align="stretch" spacing={4}>
+                  <HStack spacing={3}>
+                    <Box
+                      p={2}
+                      bg={iconBg}
+                      borderRadius="md"
+                      color={iconColor}
+                    >
+                      <Text fontSize="xl">{iconMap[insight.icon]}</Text>
+                    </Box>
+                    <Text fontWeight="600" fontSize="lg" color={textColor}>
+                      {insight.title}
+                    </Text>
+                  </HStack>
+                  
+                  <Text color={textColor} fontSize="md" lineHeight="1.6">
+                    {insight.description}
+                  </Text>
+                  
+                  {insight.historicalContext && (
+                    <Text color={textColor} fontSize="sm" fontStyle="italic">
+                      {insight.historicalContext}
+                    </Text>
+                  )}
+                  
+                  {insight.actionItems && insight.actionItems.length > 0 && (
+                    <VStack align="stretch" spacing={2}>
+                      <Text fontWeight="500" color={textColor} fontSize="sm">
+                        Recommended Actions:
+                      </Text>
+                      <List spacing={2}>
+                        {insight.actionItems.map((action: string, actionIndex: number) => (
+                          <ListItem 
+                            key={actionIndex} 
+                            color={textColor}
+                            fontSize="sm"
+                            pl={2}
+                            borderLeft="2px solid"
+                            borderColor={highlightColor}
+                          >
+                            {action}
+                          </ListItem>
+                        ))}
+                      </List>
+                    </VStack>
+                  )}
+                </VStack>
+              </Box>
+            ))}
+          </VStack>
+        )}
+      </VStack>
     </Box>
   );
-};
-
-export default InsightsPanel; 
+} 

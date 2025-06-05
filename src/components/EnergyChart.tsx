@@ -5,12 +5,12 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts';
 import type { DailyEnergyData } from '../types/energy';
 import type { TooltipProps } from 'recharts';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO, isWithinInterval } from 'date-fns';
 
@@ -137,9 +137,11 @@ export const EnergyChart = ({ data, showCost, onDataFilter }: EnergyChartProps) 
     });
   };
 
-  // Update parent when filtered data changes
-  useMemo(() => {
-    onDataFilter?.(filteredData);
+  // Notify parent component of filtered data
+  useEffect(() => {
+    if (onDataFilter) {
+      onDataFilter(filteredData);
+    }
   }, [filteredData, onDataFilter]);
 
   return (
@@ -226,7 +228,7 @@ export const EnergyChart = ({ data, showCost, onDataFilter }: EnergyChartProps) 
                 tickLine={false}
                 width={70}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <RechartsTooltip content={<CustomTooltip />} />
               <Line
                 type="monotone"
                 dataKey={showCost ? 'cost' : 'consumption'}
