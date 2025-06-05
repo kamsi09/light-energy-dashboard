@@ -1,86 +1,125 @@
-# My Energy Story Dashboard
+# Light Energy Dashboard
 
-A React-based dashboard that helps residential customers understand their electricity usage over time. The dashboard visualizes energy consumption data and provides key insights about usage patterns.
+A modern, interactive dashboard for visualizing and understanding residential energy consumption patterns. Built with React, TypeScript, and Chakra UI.
+
+![Dashboard Preview](preview.png)
 
 ## Features
 
-- Interactive daily energy consumption chart
-- Toggle between kWh and cost views (using 14¢/kWh rate)
-- Key insights including:
-  - Highest usage day
-  - Weekday vs weekend usage comparison
-  - Total consumption/cost for the period
-- Responsive design that works on all devices
+- 📊 **Interactive Energy Chart**
+  - Daily energy consumption visualization
+  - Toggle between kWh and cost views
+  - Date range selection for focused analysis
+  - Smooth animations and transitions
 
-## Prerequisites
+- 💡 **Smart Energy Insights**
+  - Total consumption/cost over selected period
+  - Average daily consumption/cost
+  - Highest usage day with date
+  - Usage trend analysis (comparing first and last week)
+  - Potential savings estimates
+  - Interactive tooltips for better understanding
 
-- Node.js (v16 or higher)
-- npm or yarn
+- 📱 **Responsive Design**
+  - Beautiful on all devices
+  - Optimized layout for mobile, tablet, and desktop
+  - Smooth animations and transitions
+  - Accessible and user-friendly interface
 
-## Installation
+- 🔄 **Data Management**
+  - CSV file upload support
+  - 15-minute interval data processing
+  - Automatic cost calculation (14¢/kWh)
+  - Date range filtering
+  - Data validation and error handling
+
+## Tech Stack
+
+- React 18
+- TypeScript
+- Chakra UI for styling
+- Recharts for data visualization
+- date-fns for date manipulation
+- Framer Motion for animations
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 16.x or later
+- npm 7.x or later
+
+### Installation
 
 1. Clone the repository:
-```bash
-git clone <repository-url>
-cd light-energy-dashboard
-```
+   ```bash
+   git clone https://github.com/yourusername/light-energy-dashboard.git
+   cd light-energy-dashboard
+   ```
 
 2. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-```
+   ```bash
+   npm install
+   ```
 
-## Running the Application
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-1. Start the development server:
-```bash
-npm run dev
-# or
-yarn dev
-```
+4. Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-2. Open your browser and navigate to `http://localhost:5173`
-
-## Building for Production
-
-To create a production build:
+### Building for Production
 
 ```bash
 npm run build
-# or
-yarn build
 ```
 
-The built files will be in the `dist` directory.
+The build artifacts will be stored in the `dist/` directory.
+
+## Usage
+
+1. **Upload Data**
+   - Click the upload area or drag and drop your CSV file
+   - The file should contain 15-minute interval energy data
+   - Supported format: CSV with datetime, duration, unit, consumption, and generation columns
+
+2. **View Dashboard**
+   - The chart shows daily energy consumption
+   - Use the date range selector to focus on specific periods
+   - Toggle between kWh and cost views using the unit toggle
+   - Hover over data points for detailed information
+
+3. **Analyze Insights**
+   - View total consumption and costs
+   - Check average daily usage
+   - Identify highest usage days
+   - Monitor usage trends
+   - Get potential savings estimates
 
 ## Data Format
 
-The application expects CSV data in the following format:
+The application expects a CSV file with the following columns:
+- `datetime`: Timestamp (YYYY-MM-DD HH:mm:ss)
+- `duration`: Duration in minutes
+- `unit`: Energy unit (e.g., "Wh")
+- `consumption`: Energy consumption value
+- `generation`: Energy generation value (if applicable)
 
-```csv
-datetime,duration,unit,consumption,generation
-2023-05-01T00:00:00-05:00,900,Wh,436,0
-```
+## Contributing
 
-Where:
-- `datetime`: ISO 8601 timestamp
-- `duration`: Duration in seconds
-- `unit`: Unit of measurement (Wh)
-- `consumption`: Energy consumption in the specified unit
-- `generation`: Energy generation in the specified unit
-
-## Technologies Used
-
-- React
-- TypeScript
-- Vite
-- Chakra UI
-- Recharts
-- date-fns
-- Papa Parse
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Chakra UI](https://chakra-ui.com/) for the beautiful component library
+- [Recharts](https://recharts.org/) for the charting capabilities
+- [Framer Motion](https://www.framer.com/motion/) for the smooth animations

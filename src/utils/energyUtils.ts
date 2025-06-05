@@ -1,5 +1,5 @@
 import type { EnergyData, DailyEnergyData, WeeklyEnergyData } from '../types/energy';
-import { format, startOfWeek, isWeekend, parseISO } from 'date-fns';
+import { format, startOfWeek, isWeekend } from 'date-fns';
 
 const RATE_PER_KWH = 0.14; // 14 cents per kWh
 
