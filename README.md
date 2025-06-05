@@ -2,7 +2,7 @@
 
 A modern, interactive dashboard for visualizing and understanding residential energy consumption patterns. Built with React, TypeScript, and Chakra UI.
 
-![Dashboard Preview](preview.png)
+![Dashboard Preview](./src/assets/preview.png)
 
 ## Features
 
@@ -10,7 +10,6 @@ A modern, interactive dashboard for visualizing and understanding residential en
   - Daily energy consumption visualization
   - Toggle between kWh and cost views
   - Date range selection for focused analysis
-  - Smooth animations and transitions
 
 - 💡 **Smart Energy Insights**
   - Total consumption/cost over selected period
@@ -19,12 +18,6 @@ A modern, interactive dashboard for visualizing and understanding residential en
   - Usage trend analysis (comparing first and last week)
   - Potential savings estimates
   - Interactive tooltips for better understanding
-
-- 📱 **Responsive Design**
-  - Beautiful on all devices
-  - Optimized layout for mobile, tablet, and desktop
-  - Smooth animations and transitions
-  - Accessible and user-friendly interface
 
 - 🔄 **Data Management**
   - CSV file upload support
