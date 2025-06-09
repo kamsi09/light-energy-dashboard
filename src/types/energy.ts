@@ -37,13 +37,4 @@ export interface AIInsight {
   potentialSavings?: string;
   actionItems?: string[];
   historicalContext?: string;
-}
-
-export interface WeatherData {
-  date: string;
-  temperature: number;
-  humidity: number;
-  precipitation: number;
-  windSpeed: number;
-  condition: string;
 } 

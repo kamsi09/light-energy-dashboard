@@ -7,13 +7,6 @@ interface Location {
   country: string;
 }
 
-interface WeatherData {
-  date: string;
-  temperature: number;
-  humidity: number;
-  weatherCondition: string;
-}
-
 interface AIInsight {
   title: string;
   description: string;
@@ -28,7 +21,6 @@ interface AIInsightRequest {
   energyData: DailyEnergyData[];
   showCost: boolean;
   location?: Location;
-  weatherData?: WeatherData[];
 }
 
 interface MonthlyStats {
@@ -38,14 +30,6 @@ interface MonthlyStats {
   maxDate: string;
   min: number;
   minDate: string;
-}
-
-interface WeatherStats {
-  avgTemp: number;
-  maxTemp: number;
-  minTemp: number;
-  conditions: Record<string, number>;
-  count: number;
 }
 
 const openai = new OpenAI({
@@ -92,42 +76,18 @@ function summarizeData(data: DailyEnergyData[], showCost: boolean) {
   }));
 }
 
-// Aggregates weather data by month for trend analysis
-function summarizeWeatherData(weatherData: WeatherData[]) {
-  return weatherData.reduce((acc, day) => {
-    const month = day.date.substring(0, 7); // YYYY-MM
-    if (!acc[month]) {
-      acc[month] = {
-        avgTemp: 0,
-        maxTemp: -Infinity,
-        minTemp: Infinity,
-        conditions: {} as Record<string, number>,
-        count: 0
-      };
-    }
-    acc[month].avgTemp += day.temperature;
-    acc[month].maxTemp = Math.max(acc[month].maxTemp, day.temperature);
-    acc[month].minTemp = Math.min(acc[month].minTemp, day.temperature);
-    acc[month].conditions[day.weatherCondition] = (acc[month].conditions[day.weatherCondition] || 0) + 1;
-    acc[month].count++;
-    return acc;
-  }, {} as Record<string, WeatherStats>);
-}
-
 export async function getAIInsights(request: AIInsightRequest): Promise<AIInsight[]> {
   try {
     // Pre-process data to reduce API payload size
     const monthlyData = summarizeData(request.energyData, request.showCost);
-    const weatherSummary = request.weatherData ? summarizeWeatherData(request.weatherData) : null;
 
     const systemPrompt = `You are an AI energy analyst. Your task is to analyze the provided monthly energy data and generate exactly 3 insights.
-    The data includes monthly consumption, generation, and weather information.
+    The data includes monthly consumption and generation information.
     
     Required Analysis Steps:
     1. Compare each month's usage to the previous year's same month
     2. Identify the highest and lowest consumption months
     3. Calculate percentage changes between months
-    4. Look for patterns in weather impact (if weather data provided)
     
     Each insight MUST:
     - Reference specific numbers from the provided data
@@ -141,7 +101,7 @@ export async function getAIInsights(request: AIInsightRequest): Promise<AIInsigh
         "title": "Month-to-Month Comparison",
         "description": "Your energy usage in [Month] 2023 was [X]% [higher/lower] than [Month] 2022",
         "icon": "trending_up",
-        "locationImpact": "[Specific weather impact if available]",
+        "locationImpact": "[Specific location impact if available]",
         "potentialSavings": "$[X]-$[Y]/month by [specific action]",
         "actionItems": [
           "[Action 1 with specific numbers]",
@@ -181,7 +141,6 @@ export async function getAIInsights(request: AIInsightRequest): Promise<AIInsigh
           role: "user", 
           content: JSON.stringify({
             monthlyData,
-            weatherSummary,
             location: request.location,
             showCost: request.showCost
           })
