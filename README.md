@@ -1,6 +1,7 @@
 # Light Energy Dashboard
 
 A modern, interactive dashboard for monitoring and analyzing energy consumption data. Built with React, TypeScript, and Chakra UI.
+![Preview](https://github.com/user-attachments/assets/1956f352-2e58-4433-b67c-9a68229e98fe)
 
 ## Features
 
